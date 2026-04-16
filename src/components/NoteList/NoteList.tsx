@@ -1,12 +1,26 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteNote } from "../../services/noteService";
 import { type Note } from "../../types/note";
 import css from "./NoteList.module.css";
 
 interface NoteListProps {
   notes: Note[];
-  onDelete: (id: string) => void;
 }
 
-const NoteList: React.FC<NoteListProps> = ({ notes, onDelete }) => {
+const NoteList: React.FC<NoteListProps> = ({ notes }) => {
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id);
+  };
+
   const getTagColor = (tag: string): string => {
     const colors: Record<string, string> = {
       Todo: "#ff6b6b",
@@ -31,8 +45,12 @@ const NoteList: React.FC<NoteListProps> = ({ notes, onDelete }) => {
             >
               {note.tag}
             </span>
-            <button className={css.button} onClick={() => onDelete(note.id)}>
-              Delete
+            <button
+              className={css.button}
+              onClick={() => handleDelete(note.id)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </button>
           </div>
         </li>

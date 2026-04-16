@@ -10,22 +10,17 @@ export interface FetchNotesParams {
   search?: string;
 }
 
+// Відповідь API згідно з документацією
 export interface FetchNotesResponse {
   notes: Note[];
-  total: number;
-  page: number;
-  perPage: number;
   totalPages: number;
 }
 
-export interface CreateNoteResponse {
-  note: Note;
-}
+// При створенні нотатки API повертає об'єкт нотатки
+export type CreateNoteResponse = Note;
 
-export interface DeleteNoteResponse {
-  message: string;
-  deletedNote: Note;
-}
+// При видаленні нотатки API повертає об'єкт видаленої нотатки
+export type DeleteNoteResponse = Note;
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -49,11 +44,11 @@ export const fetchNotes = async ({
 export const createNote = async (
   noteData: NoteInput,
 ): Promise<CreateNoteResponse> => {
-  const response = await apiClient.post<CreateNoteResponse>("/notes", noteData);
+  const response = await apiClient.post<Note>("/notes", noteData);
   return response.data;
 };
 
 export const deleteNote = async (id: string): Promise<DeleteNoteResponse> => {
-  const response = await apiClient.delete<DeleteNoteResponse>(`/notes/${id}`);
+  const response = await apiClient.delete<Note>(`/notes/${id}`);
   return response.data;
 };

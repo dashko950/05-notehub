@@ -1,3 +1,4 @@
+import ReactPaginate from "react-paginate";
 import css from "./Pagination.module.css";
 
 interface PaginationProps {
@@ -6,41 +7,22 @@ interface PaginationProps {
 }
 
 const Pagination: React.FC<PaginationProps> = ({ pageCount, onPageChange }) => {
-  const handlePageClick = (page: number) => {
-    onPageChange({ selected: page });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const pages = Array.from({ length: pageCount }, (_, i) => i);
+  if (pageCount <= 1) return null;
 
   return (
-    <div className={css.pagination}>
-      <button
-        className={css.pageLink}
-        onClick={() => handlePageClick(0)}
-        disabled={false}
-      >
-        «
-      </button>
-
-      {pages.map((page) => (
-        <button
-          key={page}
-          className={css.pageLink}
-          onClick={() => handlePageClick(page)}
-        >
-          {page + 1}
-        </button>
-      ))}
-
-      <button
-        className={css.pageLink}
-        onClick={() => handlePageClick(pageCount - 1)}
-        disabled={false}
-      >
-        »
-      </button>
-    </div>
+    <ReactPaginate
+      previousLabel="← Previous"
+      nextLabel="Next →"
+      pageCount={pageCount}
+      onPageChange={onPageChange}
+      containerClassName={css.pagination}
+      previousLinkClassName={css.pageLink}
+      nextLinkClassName={css.pageLink}
+      disabledClassName={css.disabled}
+      activeClassName={css.active}
+      pageClassName={css.pageItem}
+      pageLinkClassName={css.pageLink}
+    />
   );
 };
 

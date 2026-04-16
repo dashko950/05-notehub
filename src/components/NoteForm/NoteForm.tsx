@@ -1,10 +1,12 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { ErrorMessage } from "formik";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createNote } from "../../services/noteService";
 import { type NoteInput, type NoteTag } from "../../types/note";
 import css from "./NoteForm.module.css";
 
 interface NoteFormProps {
-  onSubmit: (values: NoteInput) => void;
   onCancel: () => void;
 }
 
@@ -19,7 +21,17 @@ const validationSchema = Yup.object({
     .required("Tag is required"),
 });
 
-const NoteForm: React.FC<NoteFormProps> = ({ onSubmit, onCancel }) => {
+const NoteForm: React.FC<NoteFormProps> = ({ onCancel }) => {
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      onCancel(); // закриває модалку після успішного створення
+    },
+  });
+
   const formik = useFormik({
     initialValues: {
       title: "",
@@ -27,9 +39,8 @@ const NoteForm: React.FC<NoteFormProps> = ({ onSubmit, onCancel }) => {
       tag: "Todo" as NoteTag,
     },
     validationSchema,
-    onSubmit: (values) => {
-      onSubmit(values);
-      formik.resetForm();
+    onSubmit: (values: NoteInput) => {
+      createMutation.mutate(values);
     },
   });
 
@@ -46,9 +57,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onSubmit, onCancel }) => {
           onBlur={formik.handleBlur}
           value={formik.values.title}
         />
-        {formik.touched.title && formik.errors.title && (
-          <span className={css.error}>{formik.errors.title}</span>
-        )}
+        <ErrorMessage name="title" component="span" className={css.error} />
       </div>
 
       <div className={css.formGroup}>
@@ -62,9 +71,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onSubmit, onCancel }) => {
           onBlur={formik.handleBlur}
           value={formik.values.content}
         />
-        {formik.touched.content && formik.errors.content && (
-          <span className={css.error}>{formik.errors.content}</span>
-        )}
+        <ErrorMessage name="content" component="span" className={css.error} />
       </div>
 
       <div className={css.formGroup}>
@@ -83,9 +90,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onSubmit, onCancel }) => {
           <option value="Meeting">Meeting</option>
           <option value="Shopping">Shopping</option>
         </select>
-        {formik.touched.tag && formik.errors.tag && (
-          <span className={css.error}>{formik.errors.tag}</span>
-        )}
+        <ErrorMessage name="tag" component="span" className={css.error} />
       </div>
 
       <div className={css.actions}>
@@ -95,9 +100,9 @@ const NoteForm: React.FC<NoteFormProps> = ({ onSubmit, onCancel }) => {
         <button
           type="submit"
           className={css.submitButton}
-          disabled={!formik.isValid || formik.isSubmitting}
+          disabled={createMutation.isPending || !formik.isValid}
         >
-          Create note
+          {createMutation.isPending ? "Creating..." : "Create note"}
         </button>
       </div>
     </form>

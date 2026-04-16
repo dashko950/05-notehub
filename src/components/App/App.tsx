@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useDebouncedCallback } from "use-debounce";
-import { fetchNotes, createNote, deleteNote } from "../../services/noteService";
-import { type NoteInput } from "../../types/note";
+import {
+  fetchNotes,
+  type FetchNotesResponse,
+} from "../../services/noteService";
 import NoteList from "../NoteList/NoteList";
 import Pagination from "../Pagination/Pagination";
 import SearchBox from "../SearchBox/SearchBox";
@@ -14,14 +16,13 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const queryClient = useQueryClient();
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
   }, 500);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<FetchNotesResponse>({
     queryKey: ["notes", currentPage, searchTerm],
     queryFn: () =>
       fetchNotes({
@@ -29,37 +30,16 @@ const App: React.FC = () => {
         perPage: 12,
         search: searchTerm,
       }),
+    placeholderData: (previousData) => previousData,
   });
-
-  const createNoteMutation = useMutation({
-    mutationFn: createNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      setIsModalOpen(false);
-    },
-  });
-
-  const deleteNoteMutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
-  });
-
-  const handleCreateNote = (noteData: NoteInput) => {
-    createNoteMutation.mutate(noteData);
-  };
-
-  const handleDeleteNote = (id: string) => {
-    deleteNoteMutation.mutate(id);
-  };
 
   const handlePageChange = ({ selected }: { selected: number }) => {
     setCurrentPage(selected + 1);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  if (isLoading) return <div className={css.loading}>Loading notes...</div>;
+  if (isLoading && !data)
+    return <div className={css.loading}>Loading notes...</div>;
   if (error)
     return (
       <div className={css.error}>
@@ -82,7 +62,7 @@ const App: React.FC = () => {
         </button>
       </header>
 
-      {hasNotes && <NoteList notes={data.notes} onDelete={handleDeleteNote} />}
+      {hasNotes && <NoteList notes={data.notes} />}
       {!hasNotes && !isLoading && (
         <div className={css.emptyState}>
           No notes found. Create your first note!
@@ -91,10 +71,7 @@ const App: React.FC = () => {
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm
-            onSubmit={handleCreateNote}
-            onCancel={() => setIsModalOpen(false)}
-          />
+          <NoteForm onCancel={() => setIsModalOpen(false)} />
         </Modal>
       )}
     </div>
