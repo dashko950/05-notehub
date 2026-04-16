@@ -48,14 +48,18 @@ const App: React.FC = () => {
     );
 
   const totalPages = data?.totalPages || 0;
-  const hasNotes = data?.notes && data?.notes.length > 0;
+  const hasNotes = data?.notes && data.notes.length > 0;
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox onSearch={debouncedSearch} />
         {totalPages > 1 && (
-          <Pagination pageCount={totalPages} onPageChange={handlePageChange} />
+          <Pagination
+            pageCount={totalPages}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
         )}
         <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note +

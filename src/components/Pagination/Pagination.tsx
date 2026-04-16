@@ -13,10 +13,15 @@ const ReactPaginate = (
 
 interface PaginationProps {
   pageCount: number;
+  currentPage: number;
   onPageChange: (selectedItem: { selected: number }) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ pageCount, onPageChange }) => {
+const Pagination: React.FC<PaginationProps> = ({
+  pageCount,
+  currentPage,
+  onPageChange,
+}) => {
   if (pageCount <= 1) return null;
 
   return (
@@ -24,6 +29,7 @@ const Pagination: React.FC<PaginationProps> = ({ pageCount, onPageChange }) => {
       previousLabel="← Previous"
       nextLabel="Next →"
       pageCount={pageCount}
+      forcePage={currentPage - 1}
       onPageChange={onPageChange}
       containerClassName={css.pagination}
       previousLinkClassName={css.pageLink}
