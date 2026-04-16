@@ -48,7 +48,7 @@ const App: React.FC = () => {
     );
 
   const totalPages = data?.totalPages || 0;
-  const hasNotes = data?.notes && data.notes.length > 0;
+  const hasNotes = data?.notes && data?.notes.length > 0;
 
   return (
     <div className={css.app}>

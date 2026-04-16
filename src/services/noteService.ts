@@ -10,16 +10,16 @@ export interface FetchNotesParams {
   search?: string;
 }
 
-// Відповідь API згідно з документацією
+// ВІДПОВІДЬ API МІСТИТЬ ТІЛЬКИ notes ТА totalPages
 export interface FetchNotesResponse {
   notes: Note[];
   totalPages: number;
 }
 
-// При створенні нотатки API повертає об'єкт нотатки
+// ПРИ СТВОРЕННІ API ПОВЕРТАЄ ОБ'ЄКТ НОТАТКИ НАПРЯМУ
 export type CreateNoteResponse = Note;
 
-// При видаленні нотатки API повертає об'єкт видаленої нотатки
+// ПРИ ВИДАЛЕННІ API ПОВЕРТАЄ ОБ'ЄКТ ВИДАЛЕНОЇ НОТАТКИ НАПРЯМУ
 export type DeleteNoteResponse = Note;
 
 const apiClient = axios.create({
